@@ -11,6 +11,18 @@ install_homebrew() {
   fi
 }
 
+install_homebrew_packages() {
+  if [ -x "$(command -v brew)" ]
+  then
+    echo "Installing Homebrew packages"
+    brew bundle
+    echo "Homebrew packages installed"
+  else
+    echo "Homebrew not installed"
+  fi
+}
+
 echo "Setup started"
 install_homebrew
+install_homebrew_packages
 echo "Setup finished"
