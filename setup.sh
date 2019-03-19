@@ -87,6 +87,7 @@ install_dotfiles() {
     stow -t $HOME gpg
     stow -t $HOME --ignore config.example ssh
     stow -t $HOME --ignore .gitconfig_user_switch.inc.example --ignore .user.inc.example git
+    stow -t $HOME tmux
     echo "dotfiles installed"
   else
     echo "Stow not installed - unable to install dotfiles"
