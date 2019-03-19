@@ -1,0 +1,2 @@
+[includeIf "gitdir:<PATH TO REPO PARENT>"]
+  path = ~/.gitconfig_users/.user.inc.example

@@ -45,6 +45,25 @@ copy_examples() {
     cp $ssh_dir/config.example $ssh_dir/config 
     echo "Created blank ssh config from example"
   fi
+
+  # git 
+  echo "Checking for gitconfig user switch include"
+  if [ -f git/.gitconfig_user_switch.inc ]
+  then 
+    echo "Existing gitconfig user switch include found"
+  else
+    cp git/.gitconfig_user_switch.inc.example git/.gitconfig_user_switch.inc
+    echo "Created blank git config user switch include from example"
+  fi
+
+  echo "Checking for gitconfig user include"
+  if [ -f git/.gitconfig_users/.user.inc ]
+  then 
+    echo "Existing gitconfig user include found"
+  else
+    cp git/.gitconfig_users/.user.inc.example git/.gitconfig_users/.user.inc
+    echo "Created blank git config user include from example"
+  fi
 }
 
 install_dotfiles() {
@@ -56,6 +75,7 @@ install_dotfiles() {
     stow -t $HOME zsh
     stow -t $HOME gpg
     stow -t $HOME --ignore config.example ssh
+    stow -t $HOME --ignore .gitconfig_user_switch.inc.example --ignore .user.inc.example git
     echo "dotfiles installed"
   else
     echo "Stow not installed - unable to install dotfiles"
