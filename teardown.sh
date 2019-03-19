@@ -1,12 +1,15 @@
 #!/bin/zsh
 
-set_default_shell() {
-  shell_name=$1
-  if chsh -s /bin/$shell_name
+uninstall_dotfiles() {
+  if [ -x "$(command -v stow)" ]
   then
-    echo "Changed default shell to $shell_name"
+    echo "Uninstalling dotfiles with GNU Stow"
+    stow -D -t $HOME zsh
+    stow -D -t $HOME gpg
+    stow -D -t $HOME ssh
+    echo "dotfiles uninstalled"
   else
-    echo "Unable to change default shell to $shell_name"
+    echo "Stow not installed - unable to uninstall dotfiles"
   fi
 }
 
@@ -21,7 +24,18 @@ uninstall_homebrew() {
   fi
 }
 
+set_default_shell() {
+  shell_name=$1
+  if chsh -s /bin/$shell_name
+  then
+    echo "Changed default shell to $shell_name"
+  else
+    echo "Unable to change default shell to $shell_name"
+  fi
+}
+
 echo "Teardown started"
+uninstall_dotfiles
 uninstall_homebrew
 set_default_shell "bash"
 echo "Teardown finished"

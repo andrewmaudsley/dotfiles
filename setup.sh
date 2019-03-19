@@ -32,9 +32,41 @@ install_homebrew_packages() {
   fi
 }
 
+copy_examples() {
+  echo "Copying examples"
+
+  # ssh
+  ssh_dir=ssh/.ssh
+  echo "Checking for $ssh_dir/config"
+  if [ -f $ssh_dir/config ]
+  then 
+    echo "Existing ssh config found"
+  else
+    cp $ssh_dir/config.example $ssh_dir/config 
+    echo "Created blank ssh config from example"
+  fi
+}
+
+install_dotfiles() {
+  if [ -x "$(command -v stow)" ]
+  then
+    echo "Installing dotfiles with GNU Stow"
+    # Explicitly set target & ignore options here
+    # instead of in buggy .stowrc or .stow-local-ignore
+    stow -t $HOME zsh
+    stow -t $HOME gpg
+    stow -t $HOME --ignore config.example ssh
+    echo "dotfiles installed"
+  else
+    echo "Stow not installed - unable to install dotfiles"
+  fi
+}
+
 echo "Setup started"
 set_default_shell "zsh"
 install_homebrew
 install_homebrew_packages
+copy_examples
+install_dotfiles
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"
