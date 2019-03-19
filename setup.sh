@@ -32,6 +32,17 @@ install_homebrew_packages() {
   fi
 }
 
+install_oh_my_zsh() {
+  # Install manually to prevent addition of default .zshrc
+  echo "Installing Oh-My-Zsh"
+  if git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+  then
+    echo "Installed Oh-My-Zsh"
+  else
+    echo "Unable to install Oh-My-Zsh"
+  fi
+}
+
 copy_examples() {
   echo "Copying examples"
 
@@ -86,6 +97,7 @@ echo "Setup started"
 set_default_shell "zsh"
 install_homebrew
 install_homebrew_packages
+install_oh_my_zsh
 copy_examples
 install_dotfiles
 echo "Setup finished"

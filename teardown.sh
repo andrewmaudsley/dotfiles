@@ -35,9 +35,17 @@ set_default_shell() {
   fi
 }
 
+uninstall_oh_my_zsh() {
+  if rm -rf ~/.oh-my-zsh
+  then
+    echo "Uninstalled Oh-My-Zsh"
+  fi
+}
+
 echo "Teardown started"
 uninstall_dotfiles
 uninstall_homebrew
 set_default_shell "bash"
+uninstall_oh_my_zsh
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
