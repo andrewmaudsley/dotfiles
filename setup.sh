@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/bash
 
 set_default_shell() {
   shell_name=$1
