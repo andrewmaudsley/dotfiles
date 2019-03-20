@@ -27,6 +27,15 @@ uninstall_homebrew() {
   fi
 }
 
+uninstall_vim_plugins() {
+  if rm -rf ~/.vim/bundle/*
+  then
+    echo "Uninstalled Vim Plugins"
+  else
+    echo "Unable to uninstall Vim Plugins"
+  fi
+}
+
 set_default_shell() {
   shell_name=$1
   if chsh -s /bin/$shell_name
@@ -71,6 +80,7 @@ uninstall_nvm_and_node() {
 echo "Teardown started"
 uninstall_dotfiles
 uninstall_homebrew
+uninstall_vim_plugins
 set_default_shell "bash"
 uninstall_oh_my_zsh
 remove_font
