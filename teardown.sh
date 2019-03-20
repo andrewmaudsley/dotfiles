@@ -9,6 +9,7 @@ uninstall_dotfiles() {
     stow -D -t $HOME ssh
     stow -D -t $HOME git
     stow -D -t $HOME tmux
+    stow -D -t $HOME vim
     echo "dotfiles uninstalled"
   else
     echo "Stow not installed - unable to uninstall dotfiles"

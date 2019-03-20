@@ -50,17 +50,17 @@ copy_examples() {
   ssh_dir=ssh/.ssh
   echo "Checking for $ssh_dir/config"
   if [ -f $ssh_dir/config ]
-  then 
+  then
     echo "Existing ssh config found"
   else
-    cp $ssh_dir/config.example $ssh_dir/config 
+    cp $ssh_dir/config.example $ssh_dir/config
     echo "Created blank ssh config from example"
   fi
 
-  # git 
+  # git
   echo "Checking for gitconfig user switch include"
   if [ -f git/.gitconfig_user_switch.inc ]
-  then 
+  then
     echo "Existing gitconfig user switch include found"
   else
     cp git/.gitconfig_user_switch.inc.example git/.gitconfig_user_switch.inc
@@ -69,7 +69,7 @@ copy_examples() {
 
   echo "Checking for gitconfig user include"
   if [ -f git/.gitconfig_users/.user.inc ]
-  then 
+  then
     echo "Existing gitconfig user include found"
   else
     cp git/.gitconfig_users/.user.inc.example git/.gitconfig_users/.user.inc
@@ -88,9 +88,36 @@ install_dotfiles() {
     stow -t $HOME --ignore config.example ssh
     stow -t $HOME --ignore .gitconfig_user_switch.inc.example --ignore .user.inc.example git
     stow -t $HOME tmux
+    stow -t $HOME vim
     echo "dotfiles installed"
   else
     echo "Stow not installed - unable to install dotfiles"
+  fi
+}
+
+install_vundle_and_plugins() {
+  echo "Installing Vundle"
+  if git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+  then
+    echo "Vundle installed"
+  else
+    echo "Could not install Vundle"
+  fi
+  echo "Installing Plugins"
+  if vim +PluginInstall +qall
+  then
+    echo "Plugins Installed"
+    echo "Compiling YouCompleteMe"
+    ~/.vim/bundle/YouCompleteMe/install.py --ts-completer
+    echo "Compiling Command-T"
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+    cd ~/.vim/bundle/command-t/ruby/command-t/ext/command-t
+    /usr/local/opt/ruby/bin/ruby extconf.rb
+    make clean
+    make
+    cd $DIR
+  else
+    echo "Could not install plugins"
   fi
 }
 
@@ -127,6 +154,7 @@ install_homebrew_packages
 install_oh_my_zsh
 copy_examples
 install_dotfiles
+install_vundle_and_plugins
 setup_font
 install_iterm_profile
 install_nvm_and_node
