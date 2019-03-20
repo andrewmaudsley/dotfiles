@@ -109,6 +109,17 @@ install_iterm_profile() {
   fi
 }
 
+install_nvm_and_node() {
+  echo "Installing nvm"
+  export NVM_DIR="$HOME/.nvm" && (
+    git clone https://github.com/creationix/nvm.git "$NVM_DIR"
+    cd "$NVM_DIR"
+    git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
+  ) && \. "$NVM_DIR/nvm.sh"
+  echo "Installing latest Node.js release"
+  nvm install node
+}
+
 echo "Setup started"
 set_default_shell "zsh"
 install_homebrew
@@ -118,5 +129,6 @@ copy_examples
 install_dotfiles
 setup_font
 install_iterm_profile
+install_nvm_and_node
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"

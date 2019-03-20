@@ -58,6 +58,15 @@ uninstall_iterm_profile() {
   fi
 }
 
+uninstall_nvm_and_node() {
+  if rm -rf ~/.nvm/
+  then
+    echo "Removed nvm"
+  else
+    echo "Could not find nvm"
+  fi
+}
+
 echo "Teardown started"
 uninstall_dotfiles
 uninstall_homebrew
@@ -65,5 +74,6 @@ set_default_shell "bash"
 uninstall_oh_my_zsh
 remove_font
 uninstall_iterm_profile
+uninstall_nvm_and_node
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
