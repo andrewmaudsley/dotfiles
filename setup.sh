@@ -94,6 +94,21 @@ install_dotfiles() {
   fi
 }
 
+setup_font() {
+  mkdir ~/Library/Fonts/SFMono
+  cp /Applications/Utilities/Terminal.app/Contents/Resources/Fonts/* ~/Library/Fonts/SFMono
+  echo "SF Mono font has been setup"
+}
+
+install_iterm_profile() {
+  if cp iterm-profile.json ~/Library/Application\ Support/iTerm2/DynamicProfiles/
+  then
+    echo "Installed iTerm profile"
+  else
+    echo "Unable to install iTerm profile"
+  fi
+}
+
 echo "Setup started"
 set_default_shell "zsh"
 install_homebrew
@@ -101,5 +116,7 @@ install_homebrew_packages
 install_oh_my_zsh
 copy_examples
 install_dotfiles
+setup_font
+install_iterm_profile
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"

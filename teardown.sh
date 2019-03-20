@@ -43,10 +43,27 @@ uninstall_oh_my_zsh() {
   fi
 }
 
+remove_font() {
+  rm -rf ~/Library/Fonts/SFMono
+  echo "Removed SF Mono font"
+}
+
+uninstall_iterm_profile() {
+  if [ -f ~/Library/Application\ Support/iTerm2/DynamicProfiles/iterm-profile.json ]
+  then
+    rm ~/Library/Application\ Support/iTerm2/DynamicProfiles/iterm-profile.json
+    echo "Removed iTerm profile"
+  else
+    echo "Could not find iTerm profile to remove"
+  fi
+}
+
 echo "Teardown started"
 uninstall_dotfiles
 uninstall_homebrew
 set_default_shell "bash"
 uninstall_oh_my_zsh
+remove_font
+uninstall_iterm_profile
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
