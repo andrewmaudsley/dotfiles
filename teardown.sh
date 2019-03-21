@@ -36,13 +36,12 @@ uninstall_vim_plugins() {
   fi
 }
 
-set_default_shell() {
-  shell_name=$1
-  if chsh -s /bin/$shell_name
+uninstall_nvm_and_node() {
+  if rm -rf ~/.nvm/
   then
-    echo "Changed default shell to $shell_name"
+    echo "Removed nvm"
   else
-    echo "Unable to change default shell to $shell_name"
+    echo "Could not find nvm"
   fi
 }
 
@@ -68,23 +67,24 @@ uninstall_iterm_profile() {
   fi
 }
 
-uninstall_nvm_and_node() {
-  if rm -rf ~/.nvm/
+set_default_shell() {
+  shell_name=$1
+  if chsh -s /bin/$shell_name
   then
-    echo "Removed nvm"
+    echo "Changed default shell to $shell_name"
   else
-    echo "Could not find nvm"
+    echo "Unable to change default shell to $shell_name"
   fi
 }
 
 echo "Teardown started"
-uninstall_dotfiles
 uninstall_homebrew
+uninstall_dotfiles
 uninstall_vim_plugins
-set_default_shell "bash"
+uninstall_nvm_and_node
 uninstall_oh_my_zsh
 remove_font
 uninstall_iterm_profile
-uninstall_nvm_and_node
+set_default_shell "bash"
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
