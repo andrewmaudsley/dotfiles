@@ -157,6 +157,6 @@ install_vundle_and_plugins
 setup_font
 install_iterm_profile
 install_oh_my_zsh
-set_default_shell "zsh"
+set_default_shell "local/bin/zsh"
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"
