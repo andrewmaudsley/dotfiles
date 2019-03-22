@@ -46,10 +46,9 @@ uninstall_nvm_and_node() {
 }
 
 uninstall_oh_my_zsh() {
-  if rm -rf ~/.oh-my-zsh
-  then
-    echo "Uninstalled Oh-My-Zsh"
-  fi
+  rm -rf ~/.oh-my-zsh
+  rm ~/.zcompdump-*
+  echo "Uninstalled Oh-My-Zsh"
 }
 
 remove_font() {
