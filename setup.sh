@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory the script is in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 install_homebrew() {
   if [ -x "$(command -v brew)" ]
   then
@@ -100,7 +103,6 @@ install_vundle_and_plugins() {
     echo "Compiling YouCompleteMe"
     ~/.vim/bundle/YouCompleteMe/install.py --ts-completer
     echo "Compiling Command-T"
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
     cd ~/.vim/bundle/command-t/ruby/command-t/ext/command-t
     /usr/local/opt/ruby/bin/ruby extconf.rb
     make clean
@@ -117,12 +119,14 @@ setup_font() {
   echo "SF Mono font has been setup"
 }
 
-install_iterm_profile() {
-  if cp iterm-profile.json ~/Library/Application\ Support/iTerm2/DynamicProfiles/
+setup_iterm() {
+  echo "Setting up iTerm"
+  if defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string $DIR && 
+  defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
   then
-    echo "Installed iTerm profile"
+    echo "Done"
   else
-    echo "Unable to install iTerm profile"
+    echo "Unable to setup iTerm" 
   fi
 }
 
@@ -166,7 +170,7 @@ copy_examples
 install_dotfiles
 install_vundle_and_plugins
 setup_font
-install_iterm_profile
+setup_iterm
 install_oh_my_zsh
 setup_zsh
 echo "Setup finished"
