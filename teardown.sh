@@ -56,16 +56,6 @@ remove_font() {
   echo "Removed SF Mono font"
 }
 
-uninstall_iterm_profile() {
-  if [ -f ~/Library/Application\ Support/iTerm2/DynamicProfiles/iterm-profile.json ]
-  then
-    rm ~/Library/Application\ Support/iTerm2/DynamicProfiles/iterm-profile.json
-    echo "Removed iTerm profile"
-  else
-    echo "Could not find iTerm profile to remove"
-  fi
-}
-
 teardown_zsh() {
   # Remove Zsh installed via Homebrew from shells list
   echo "Removing Zsh installed via Homebrew from /etc/shells"
@@ -96,7 +86,6 @@ uninstall_vim_plugins
 uninstall_nvm_and_node
 uninstall_oh_my_zsh
 remove_font
-uninstall_iterm_profile
 teardown_zsh
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
