@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 install_homebrew() {
   if [ -x "$(command -v brew)" ]
@@ -137,13 +137,24 @@ install_oh_my_zsh() {
   fi
 }
 
-set_default_shell() {
-  shell_name=$1
-  if chsh -s /bin/$shell_name
+setup_zsh() {
+  # Use Zsh installed via Homebrew
+  zsh_path="/usr/local/bin/zsh"
+  if ! grep $zsh_path /etc/shells
   then
-    echo "Changed default shell to $shell_name"
+    echo "Adding Zsh installed via Homebrew to /etc/shells"
+    echo $zsh_path | sudo tee -a /etc/shells
+  fi
+  set_default_shell $zsh_path
+}
+
+set_default_shell() {
+  shell_path=$1
+  if chsh -s $shell_path
+  then
+    echo "Changed default shell to $shell_path"
   else
-    echo "Unable to change default shell to $shell_name"
+    echo "Unable to change default shell to $shell_path"
   fi
 }
 
@@ -157,6 +168,6 @@ install_vundle_and_plugins
 setup_font
 install_iterm_profile
 install_oh_my_zsh
-set_default_shell "local/bin/zsh"
+setup_zsh
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"
