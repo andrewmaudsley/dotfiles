@@ -89,6 +89,17 @@ install_dotfiles() {
 }
 
 install_vundle_and_plugins() {
+  echo "Installing Solarized Vim Colorscheme"
+  if ! [ -d ~/.vim/colors ]
+  then
+    mkdir ~/.vim/colors
+  fi
+  if curl -o ~/.vim/colors/solarized.vim https://raw.githubusercontent.com/altercation/vim-colors-solarized/master/colors/solarized.vim
+  then
+    echo "Done"
+  else
+    echo "Failed"
+  fi
   echo "Installing Vundle"
   if git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
   then
@@ -121,12 +132,12 @@ setup_font() {
 
 setup_iterm() {
   echo "Setting up iTerm"
-  if defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string $DIR && 
+  if defaults write com.googlecode.iterm2.plist PrefsCustomFolder -string $DIR &&
   defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
   then
     echo "Done"
   else
-    echo "Unable to setup iTerm" 
+    echo "Unable to setup iTerm"
   fi
 }
 
