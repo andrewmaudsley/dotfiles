@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory the script is in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 uninstall_dotfiles() {
   if [ -x "$(command -v stow)" ]
   then
@@ -56,6 +59,17 @@ remove_font() {
   echo "Removed SF Mono font"
 }
 
+teardown_iterm() {
+  echo "Tearing down iTerm"
+  if defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool false &&
+  rm ~/Library/Preferences/com.googlecode.iterm2.plist
+  then
+    echo "Done"
+  else
+    echo "Unable to teardown iTerm"
+  fi
+}
+
 teardown_zsh() {
   # Remove Zsh installed via Homebrew from shells list
   echo "Removing Zsh installed via Homebrew from /etc/shells"
@@ -86,6 +100,7 @@ uninstall_vim_plugins
 uninstall_nvm_and_node
 uninstall_oh_my_zsh
 remove_font
+teardown_iterm
 teardown_zsh
 echo "Teardown finished"
 echo "Please exit and start a new session for all changes to take effect"
