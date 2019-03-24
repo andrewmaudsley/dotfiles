@@ -95,14 +95,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Functions
-# Custom cd
-custom_cd() {
-  cd $1;
-  ls;
-}
-alias cd="custom_cd"
-
 # Launch gpg-agent for use by SSH
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
