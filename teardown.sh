@@ -1,16 +1,5 @@
 #!/bin/bash
 
-uninstall_homebrew() {
-  if [ -x "$(command -v brew)" ]
-  then
-    echo "Uninstalling Homebrew"
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
-    echo "Homebrew uninstalled"
-  else
-    echo "Homebrew not installed"
-  fi
-}
-
 uninstall_dotfiles() {
   if [ -x "$(command -v stow)" ]
   then
@@ -24,6 +13,17 @@ uninstall_dotfiles() {
     echo "dotfiles uninstalled"
   else
     echo "Stow not installed - unable to uninstall dotfiles"
+  fi
+}
+
+uninstall_homebrew() {
+  if [ -x "$(command -v brew)" ]
+  then
+    echo "Uninstalling Homebrew"
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+    echo "Homebrew uninstalled"
+  else
+    echo "Homebrew not installed"
   fi
 }
 
