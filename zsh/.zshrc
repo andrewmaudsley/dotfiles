@@ -103,3 +103,11 @@ gpgconf --launch gpg-agent
 # Source nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+# Google Cloud SDK
+# The next line updates PATH for the Google Cloud SDK
+GCLOUD_SDK_PATH="/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/"
+if [ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]; then source "$GCLOUD_SDK_PATH/path.zsh.inc"; fi
+
+# The next line enables shell command completion for gcloud
+if [ -f "$GCLOUD_SDK_PATH/completion.zsh.inc" ]; then source "$GCLOUD_SDK_PATH/completion.zsh.inc"; fi
