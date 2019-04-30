@@ -31,6 +31,7 @@ Plugin 'wincent/command-t'
 Plugin 'prettier/vim-prettier'
 Plugin 'mileszs/ack.vim'
 Plugin 'mkitt/tabline.vim'
+Plugin 'w0rp/ale'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -89,3 +90,11 @@ let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.js'
 
 " Markdown config
 let vim_markdown_preview_github=1
+
+" Configure Asynchronous Lint Engine
+let g:ale_fixers = {
+ \ 'javascript': ['eslint']
+ \ }
+
+let g:ale_fix_on_save = 1
+let g:airline#extensions#ale#enabled = 1
