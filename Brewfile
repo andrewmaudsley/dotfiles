@@ -15,3 +15,4 @@ cask "docker"
 brew "zsh"
 brew "yarn", args: ["ignore-dependencies"]
 cask "google-cloud-sdk"
+brew "grip"
