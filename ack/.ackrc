@@ -1,0 +1,5 @@
+--type-add=lock=.lock
+--nolock
+--ignore-dir=build
+--ignore-dir=dist
+--ignore-dir=.cache

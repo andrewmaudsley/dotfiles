@@ -82,6 +82,7 @@ install_dotfiles() {
     stow -t $HOME --ignore .gitconfig_user_switch.inc.example --ignore .user.inc.example git
     stow -t $HOME tmux
     stow -t $HOME vim
+    stow -t $HOME ack
     echo "dotfiles installed"
   else
     echo "Stow not installed - unable to install dotfiles"
