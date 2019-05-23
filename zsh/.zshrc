@@ -104,6 +104,9 @@ gpgconf --launch gpg-agent
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
+# Fix Command-T <C-s> mapping to open split windows
+stty -ixon
+
 # Google Cloud SDK
 # The next line updates PATH for the Google Cloud SDK
 GCLOUD_SDK_PATH="/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/"
