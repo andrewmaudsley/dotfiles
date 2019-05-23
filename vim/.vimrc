@@ -69,7 +69,7 @@ nmap <S-Enter> O<Esc>
 nmap <CR> o<Esc>
 
 " Search config
-let g:CommandTWildIgnore=&wildignore . ",*/node_modules,*/build,*/lib"
+let g:CommandTWildIgnore=&wildignore . ",*/node_modules,*/build,*/lib,*/dist"
 cnoreabbrev Ack Ack!
 nnoremap <Leader>a :Ack!<Space>
 if executable('ag')
