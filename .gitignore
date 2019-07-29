@@ -2,3 +2,4 @@ ssh/.ssh/config
 git/.gitconfig_user_switch.inc
 git/.gitconfig_users/.user.inc
 git/.gitconfig_users/.user_*.inc
+grip/user.ini
