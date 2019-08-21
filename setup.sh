@@ -18,6 +18,7 @@ install_homebrew_packages() {
   if [ -x "$(command -v brew)" ]
   then
     echo "Installing Homebrew packages"
+    brew update
     brew bundle
     echo "Homebrew packages installed"
   else
@@ -68,7 +69,7 @@ copy_examples() {
     cp git/.gitconfig_users/.user.inc.example git/.gitconfig_users/.user.inc
     echo "Created blank git config user include from example"
   fi
-  
+
   echo "Checking for user.ini used by grip"
   if [ -f grip/user.ini ]
   then
@@ -92,7 +93,7 @@ install_dotfiles() {
     stow -t $HOME tmux
     stow -t $HOME vim
     stow -t $HOME ack
-    stow -t $HOME/.grip --ignore user.ini.example grip 
+    stow -t $HOME/.grip --ignore user.ini.example grip
     echo "dotfiles installed"
   else
     echo "Stow not installed - unable to install dotfiles"
