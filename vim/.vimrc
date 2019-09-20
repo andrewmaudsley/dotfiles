@@ -52,6 +52,7 @@ filetype plugin indent on    " required
 " Put your non-Plugin stuff after this line
 
 syntax enable
+let g:solarized_termtrans=1
 set background=dark
 colorscheme solarized
 set laststatus=2
