@@ -79,6 +79,10 @@ endif
 " bind K to search word under cursor
 nnoremap K :Ack! "\b<C-R><C-W>\b"<CR>:cw<CR>
 
+" Specify the pairs delimitMate matches on
+" Prevents interference with other tag closing plugins used
+let b:delimitMate_matchpairs = '(:),{:},[:]'
+
 " UltiSnips trigger configuration. Do not use <tab> if you use
 " https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<C-l>"
