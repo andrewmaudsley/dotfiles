@@ -158,10 +158,20 @@ setup_iterm() {
 }
 
 install_oh_my_zsh() {
-  # Install manually to prevent addition of default .zshrc
   echo "Installing Oh-My-Zsh"
-  if git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+  if sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" "" --unattended
   then
+    # Remove default .zshrc
+    if [ -f ~/.zshrc ]
+    then
+      echo "Removing default .zshrc"
+      if rm ~/.zshrc
+      then
+        echo "Removed default .zshrc"
+      else
+        echo "Failed to remove default .zshrc"
+      fi
+    fi
     echo "Installed Oh-My-Zsh"
   else
     echo "Unable to install Oh-My-Zsh"
@@ -194,11 +204,11 @@ install_homebrew
 install_homebrew_packages
 install_nvm_and_node
 copy_examples
+install_oh_my_zsh
 install_dotfiles
 install_vundle_and_plugins
 setup_font
 setup_iterm
-install_oh_my_zsh
 setup_zsh
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"
