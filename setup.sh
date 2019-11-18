@@ -102,6 +102,10 @@ install_dotfiles() {
 
 install_vundle_and_plugins() {
   echo "Installing Solarized Vim Colorscheme"
+  if ! [ -d ~/.vim ]
+  then
+    mkdir ~/.vim
+  fi
   if ! [ -d ~/.vim/colors ]
   then
     mkdir ~/.vim/colors
