@@ -65,8 +65,15 @@ set autoindent
 set smartindent
 set number
 set backspace=indent,eol,start
+set foldmethod=indent
 nmap <S-Enter> O<Esc>
 nmap <CR> o<Esc>
+
+" Keep all code folds open when a file is opened
+augroup OpenAllFoldsOnFileOpen
+  autocmd!
+  autocmd BufRead * normal zR
+augroup END
 
 " Search config
 let g:CommandTWildIgnore=&wildignore . ",*/node_modules,*/build,*/lib,*/dist"
