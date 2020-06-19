@@ -189,6 +189,10 @@ setup_zsh() {
   set_default_shell $zsh_path
 }
 
+setup_macos() {
+  defaults write -g ApplePressAndHoldEnabled -bool false
+}
+
 set_default_shell() {
   shell_path=$1
   if chsh -s $shell_path
@@ -210,5 +214,6 @@ install_vundle_and_plugins
 setup_font
 setup_iterm
 setup_zsh
+setup_macos
 echo "Setup finished"
 echo "Please exit and start a new session for all changes to take effect"
