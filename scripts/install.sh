@@ -158,7 +158,7 @@ install_homebrew() {
   else
     echo "Installing Homebrew..."
     # Download and run the install script
-    (yes "" | INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)") || {
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" || {
       echo "Error: Failed to install Homebrew"
       exit $E_HOMEBREW
     }
