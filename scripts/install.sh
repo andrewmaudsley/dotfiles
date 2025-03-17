@@ -4,19 +4,22 @@
 set -uo pipefail  # Removed -e as we'll handle it in the trap
 
 # Define exit codes
-readonly E_XCODE=1
-readonly E_CLONE=2
-readonly E_HOMEBREW=3
-readonly E_PACKAGES=4
-readonly E_DIRECTORY=5
+readonly E_SUDO=1
+readonly E_XCODE=2
+readonly E_CLONE=3
+readonly E_HOMEBREW=4
+readonly E_PACKAGES=5
+readonly E_DIRECTORY=6
 readonly E_UNEXPECTED=99
 
 # Current step tracking
 CURRENT_STEP=""
+SUDO_PID=""
 
 # Function to set current step
 set_step() {
   CURRENT_STEP="$1"
+  echo "Step: $1"
 }
 
 # Error handler
@@ -33,7 +36,7 @@ handle_error() {
   echo "Failed on line $line_no with exit code $exit_code" >&2
   
   # Preserve explicit error codes from functions
-  if [ "$exit_code" -ge "$E_XCODE" ] && [ "$exit_code" -le "$E_DIRECTORY" ]; then
+  if [ "$exit_code" -ge "$E_SUDO" ] && [ "$exit_code" -le "$E_DIRECTORY" ]; then
     exit "$exit_code"
   fi
   
@@ -42,6 +45,73 @@ handle_error() {
 
 # Set up error trap with line number
 trap 'handle_error ${LINENO}' ERR
+
+# Function to check if we have sudo access without a password
+check_sudo_access() {
+  sudo -n true 2>/dev/null
+}
+
+# Function to maintain sudo access
+maintain_sudo() {
+  set_step "Maintaining administrator privileges"
+  
+  while true; do
+    # Check sudo access without prompting
+    if ! check_sudo_access; then
+      set_step "Renewing administrator privileges"
+      echo "Administrator privileges expired, requesting renewal..." >&2
+      
+      if ! sudo -p "Please enter your password to continue: " -v; then
+        echo "Error: Failed to renew administrator privileges" >&2
+        return $E_SUDO
+      fi
+      
+      # Verify sudo access was renewed
+      if ! check_sudo_access; then
+        echo "Error: Failed to verify administrator privileges after renewal" >&2
+        return $E_SUDO
+      fi
+    fi
+    sleep 60
+  done
+}
+
+# Function to request sudo access
+request_sudo() {
+  local message="$1"
+  set_step "Requesting administrator privileges"
+  
+  # Clear any existing sudo tokens for safety
+  sudo -k
+  
+  # Request sudo access with the provided message
+  if ! sudo -p "$message" -v; then
+    echo "Error: Failed to obtain administrator privileges" >&2
+    echo "Please ensure you have sudo access and try again" >&2
+    exit $E_SUDO
+  fi
+  
+  # Verify sudo access
+  if ! check_sudo_access; then
+    echo "Error: Failed to verify administrator privileges" >&2
+    echo "Please ensure you have sudo access and try again" >&2
+    exit $E_SUDO
+  fi
+  
+  # Start background process to maintain sudo access
+  maintain_sudo &
+  SUDO_PID=$!
+  
+  # Set up cleanup trap for the sudo maintenance process
+  trap '
+    if [ -n "$SUDO_PID" ]; then
+      set_step "Cleaning up administrator privileges"
+      kill $SUDO_PID 2>/dev/null
+      wait $SUDO_PID 2>/dev/null
+      SUDO_PID=""
+    fi
+  ' EXIT INT TERM HUP QUIT
+}
 
 # Function to validate directory
 validate_directory() {
@@ -157,21 +227,42 @@ install_homebrew() {
     echo "Homebrew is already installed"
   else
     echo "Installing Homebrew..."
+    
+    # Request sudo access before starting installation
+    echo "Administrator privileges are required to install Homebrew"
+    request_sudo "Please enter your password to install Homebrew: "
+    
     # Download and run the install script
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" || {
-      echo "Error: Failed to install Homebrew"
+      echo "Error: Failed to install Homebrew" >&2
+      echo "Please check the error messages above and try again" >&2
       exit $E_HOMEBREW
     }
     
-    # Add Homebrew to PATH
+    # Add Homebrew to PATH based on architecture
+    local brew_path=""
     if [[ "$(uname -m)" == "arm64" ]]; then
-      # Apple Silicon path
-      (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/$(whoami)/.zprofile
+      brew_path="/opt/homebrew/bin/brew"
+      (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> "$HOME/.zprofile"
       eval "$(/opt/homebrew/bin/brew shellenv)"
     else
-      # Intel path
-      (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> /Users/$(whoami)/.zprofile
+      brew_path="/usr/local/bin/brew"
+      (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> "$HOME/.zprofile"
       eval "$(/usr/local/bin/brew shellenv)"
+    fi
+    
+    # Verify Homebrew executable exists
+    if [ ! -x "$brew_path" ]; then
+      echo "Error: Homebrew executable not found at $brew_path" >&2
+      echo "Installation may have failed or PATH may not be set correctly" >&2
+      exit $E_HOMEBREW
+    fi
+    
+    # Verify Homebrew is working
+    if ! brew --version &>/dev/null; then
+      echo "Error: Homebrew installation verified but 'brew' command not working" >&2
+      echo "Please try opening a new terminal and running 'brew --version'" >&2
+      exit $E_HOMEBREW
     fi
     
     echo "Homebrew installed successfully"
@@ -179,10 +270,10 @@ install_homebrew() {
   
   # Update Homebrew
   echo "Updating Homebrew..."
-  brew update || {
-    echo "Error: Failed to update Homebrew"
-    exit $E_HOMEBREW
-  }
+  if ! brew update; then
+    echo "Error: Failed to update Homebrew" >&2
+    echo "You may want to run 'brew update' manually later" >&2
+  fi
 }
 
 # Function to install packages from Brewfile
