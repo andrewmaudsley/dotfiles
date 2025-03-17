@@ -1,3 +1,8 @@
+# Taps
+tap "hashicorp/tap"
+tap "ngrok/ngrok"
+
+# Packages
 brew "fish"
 brew "tmux"
 brew "vim"
@@ -13,13 +18,13 @@ brew "adr-tools"
 brew "gh"
 brew "coreutils"
 brew "pnpm"
-tap "hashicorp/tap"
 brew "terraform"
-cask_args appdir: "/Applications"
+
+# Casks
 cask "gpg-suite"
 cask "ghostty"
 cask "docker"
 cask "visual-studio-code"
 cask "windsurf"
 cask "dbeaver-community"
-cask "ngrok"
+cask "ngrok/ngrok/ngrok"
