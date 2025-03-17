@@ -27,6 +27,14 @@ handle_error() {
   local exit_code=$?
   local line_no=$1
   
+  # Clean up sudo maintenance if it's running
+  if [ -n "$SUDO_PID" ]; then
+    set_step "Cleaning up administrator privileges"
+    kill $SUDO_PID 2>/dev/null
+    wait $SUDO_PID 2>/dev/null
+    SUDO_PID=""
+  fi
+
   # Don't handle explicit exits with success
   if [ "$exit_code" -eq 0 ]; then
     exit 0
@@ -53,13 +61,10 @@ check_sudo_access() {
 
 # Function to maintain sudo access
 maintain_sudo() {
-  set_step "Maintaining administrator privileges"
-  
   while true; do
     # Check sudo access without prompting
     if ! check_sudo_access; then
-      set_step "Renewing administrator privileges"
-      echo "Administrator privileges expired, requesting renewal..." >&2
+      echo "Renewing administrator privileges..." >&2
       
       if ! sudo -p "Please enter your password to continue: " -v; then
         echo "Error: Failed to renew administrator privileges" >&2
@@ -76,25 +81,26 @@ maintain_sudo() {
   done
 }
 
-# Function to request sudo access
-request_sudo() {
-  local message="$1"
+# Function to ensure sudo access
+ensure_sudo() {
   set_step "Requesting administrator privileges"
+  echo "This script requires administrator privileges to install and configure software."
+  echo "You may be prompted for your password."
   
   # Clear any existing sudo tokens for safety
   sudo -k
   
-  # Request sudo access with the provided message
-  if ! sudo -p "$message" -v; then
+  # Request sudo access with a helpful message
+  if ! sudo -p "Please enter your password to continue with the installation: " -v; then
     echo "Error: Failed to obtain administrator privileges" >&2
-    echo "Please ensure you have sudo access and try again" >&2
+    echo "Please ensure you have sudo access and try again." >&2
     exit $E_SUDO
   fi
   
-  # Verify sudo access
+  # Verify initial sudo access
   if ! check_sudo_access; then
     echo "Error: Failed to verify administrator privileges" >&2
-    echo "Please ensure you have sudo access and try again" >&2
+    echo "Please ensure you have sudo access and try again." >&2
     exit $E_SUDO
   fi
   
@@ -111,6 +117,8 @@ request_sudo() {
       SUDO_PID=""
     fi
   ' EXIT INT TERM HUP QUIT
+  
+  echo "Administrator privileges obtained and verified successfully"
 }
 
 # Function to validate directory
@@ -228,10 +236,6 @@ install_homebrew() {
   else
     echo "Installing Homebrew..."
     
-    # Request sudo access before starting installation
-    echo "Administrator privileges are required to install Homebrew"
-    request_sudo "Please enter your password to install Homebrew: "
-    
     # Download and run the install script
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" || {
       echo "Error: Failed to install Homebrew" >&2
@@ -340,9 +344,12 @@ install_dotfiles() {
   local install_dir="$1"
   set_step "Initializing dotfiles installation"
   
+  # Ensure we have sudo access before proceeding
+  ensure_sudo
+  
   # Install Xcode Command Line Tools if needed
   install_xcode_tools
-
+  
   # Clone dotfiles repository
   clone_dotfiles "$install_dir"
   
@@ -355,9 +362,7 @@ install_dotfiles() {
   # Run cleanup
   cleanup
   
-  set_step "Completing installation"
-  echo "Installation complete! 🎉"
-  return 0
+  echo "dotfiles installation completed successfully!"
 }
 
 # Get and validate installation directory
