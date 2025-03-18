@@ -1,14 +1,16 @@
 # dotfiles
 
-This [dotfiles](https://dotfiles.github.io) repo is used to setup and manage a macOS based software development environment, primarily for the development of [TypeScript](https://www.typescriptlang.org) and JavaScript applications.
+This dotfiles  repo is used to setup and manage a macOS based software development environment, primarily for the development of [TypeScript](https://www.typescriptlang.org) applications.
+
+Learn more about dotfiles with an unofficial guide from GitHub at [dotfiles.github.io](https://dotfiles.github.io).
 
 ## Usage
 
 Use 'as is' or as inspiration for your own dotfiles.  
 
-Intended for installation on a fresh install of macOS and as the principal method of environment setup and ongoing management. However, features could be incorporated into, or run alongside, an existing dotfiles setup with modification.  
+Intended for installation on a fresh install of macOS, as the principal method of environment setup and ongoing management. However, features can be integrated with, or run alongside, an existing dotfiles setup with modification.  
 
-Before installing on your main development system, it's recommended to run a trial on a fresh install of macOS, for example using a virtual machine. Backing up any existing configuration prior to use is also recommended.  
+Before installing on your main development system, running a trial on a fresh install of macOS is recommended, for example using a virtual machine. Reading the [install script](./scripts/install.sh) and backing up any existing configuration is also recommended prior to use.  
 
 Note that this is a perpetual work in progress and is developed to meet the requirements and taste of the author [Andrew Maudsley](https://www.andrewmaudsley.com), as such no warranty is provided (see [LICENSE](./LICENSE)).
 
@@ -30,7 +32,7 @@ Running the install script will:
 * Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle)
 * Run cleanup   
 
-Modern versions of macOS come with [curl](https://github.com/curl/curl) installed by default. This can be used to run the install script using the following command:
+Modern versions of macOS come with [curl](https://github.com/curl/curl) installed by default. This can be used to download and execute the install script using the following command:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/andrewmaudsley/dotfiles/main/scripts/install.sh | bash
