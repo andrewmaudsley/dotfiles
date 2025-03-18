@@ -15,6 +15,7 @@ readonly E_UNEXPECTED=99
 # Current step tracking
 CURRENT_STEP=""
 SUDO_PID=""
+SCRIPT_FINISHED=false
 
 # Function to set current step
 set_step() {
@@ -22,21 +23,32 @@ set_step() {
   echo "Step: $1"
 }
 
+# Function to cleanup sudo
+cleanup_sudo() {
+  # Only clean up if we haven't finished successfully
+  if [ "$SCRIPT_FINISHED" = "false" ] && [ -n "$SUDO_PID" ]; then
+    set_step "Cleaning up administrator privileges"
+    kill $SUDO_PID 2>/dev/null
+    wait $SUDO_PID 2>/dev/null || true  # Ignore wait exit code
+    SUDO_PID=""
+  fi
+}
+
 # Error handler
 handle_error() {
   local exit_code=$?
   local line_no=$1
   
-  # Clean up sudo maintenance if it's running
-  if [ -n "$SUDO_PID" ]; then
-    set_step "Cleaning up administrator privileges"
-    kill $SUDO_PID 2>/dev/null
-    wait $SUDO_PID 2>/dev/null
-    SUDO_PID=""
+  # Don't handle explicit exits with success or if script finished successfully
+  if [ "$exit_code" -eq 0 ] || [ "$SCRIPT_FINISHED" = "true" ]; then
+    exit 0
   fi
-
-  # Don't handle explicit exits with success
-  if [ "$exit_code" -eq 0 ]; then
+  
+  # Clean up sudo if needed
+  cleanup_sudo
+  
+  # Don't treat process termination as error
+  if [ "$exit_code" -eq 143 ]; then  # SIGTERM
     exit 0
   fi
   
@@ -50,9 +62,6 @@ handle_error() {
   
   exit $E_UNEXPECTED
 }
-
-# Set up error trap with line number
-trap 'handle_error ${LINENO}' ERR
 
 # Function to check if we have sudo access without a password
 check_sudo_access() {
@@ -109,14 +118,7 @@ ensure_sudo() {
   SUDO_PID=$!
   
   # Set up cleanup trap for the sudo maintenance process
-  trap '
-    if [ -n "$SUDO_PID" ]; then
-      set_step "Cleaning up administrator privileges"
-      kill $SUDO_PID 2>/dev/null
-      wait $SUDO_PID 2>/dev/null
-      SUDO_PID=""
-    fi
-  ' EXIT INT TERM HUP QUIT
+  trap cleanup_sudo EXIT INT TERM HUP QUIT
   
   echo "Administrator privileges obtained and verified successfully"
 }
@@ -362,8 +364,15 @@ install_dotfiles() {
   # Run cleanup
   cleanup
   
+  # Mark script as finished successfully
+  SCRIPT_FINISHED=true
+  
   echo "dotfiles installation completed successfully!"
+  exit 0
 }
+
+# Set up error trap with line number
+trap 'handle_error ${LINENO}' ERR
 
 # Get and validate installation directory
 set_step "Validating installation directory"
@@ -371,4 +380,3 @@ INSTALL_DIR=$(get_install_directory "$HOME/.dotfiles")
 
 # Run installation
 install_dotfiles "$INSTALL_DIR"
-exit $?
