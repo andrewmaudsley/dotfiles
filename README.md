@@ -22,11 +22,11 @@ Feedback or suggestions are welcome, please raise an issue or submit a pull requ
 
 ## Installation
 
-The installation script will perform the initial installation and setup. Once complete, subsequent runs allow the environment to be updated.
+On first run, the install script will perform the initial installation and environment setup. Once complete, subsequent runs allow the environment to be updated.
 
 Running the install script will:
 
-* Install Xcode Command Line Tools
+* Install Xcode Command Line Tools if not present
 * Clone this repo
 * Install the [Homebrew](https://brew.sh) package manager
 * Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle)
