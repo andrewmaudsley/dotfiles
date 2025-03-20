@@ -42,8 +42,13 @@ handle_termination() {
 cleanup_sudo() {
   set_step "Cleaning up administrator privileges"
   # Kill the sudo maintenance process first
-  kill $SUDO_PID 2>/dev/null
+  if ! kill $SUDO_PID 2>/dev/null; then
+    echo "Error: Failed to kill sudo maintenance process" >&2
+    exit $E_SUDO
+  fi
   SUDO_PID=""
+  echo "Administrator privileges cleaned up successfully"
+  return 0
 }
 
 # Function to ensure sudo access
@@ -315,14 +320,6 @@ install_packages() {
 cleanup() {
   set_step "Running cleanup tasks"
   local cleanup_failed=0
-  
-  # Ensure we have sudo access before starting cleanup
-  if ! check_sudo_access; then
-    echo "Error: Lost administrator privileges during cleanup" >&2
-    exit $E_SUDO
-  fi
-  
-  echo "Running cleanup..."
   
   # Cache brew paths while we still have sudo
   local brew_cache
