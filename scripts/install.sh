@@ -201,7 +201,7 @@ install_xcode_tools() {
     if ! xcode-select --install; then
       echo "Error: Failed to install Xcode Command Line Tools" >&2
       return $E_XCODE
-    }
+    fi
     
     # Wait for Xcode Command Line Tools to finish installing
     echo "Waiting for Xcode Command Line Tools installation to complete..."
