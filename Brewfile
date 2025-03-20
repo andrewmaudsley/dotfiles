@@ -18,7 +18,7 @@ brew "adr-tools"
 brew "gh"
 brew "coreutils"
 brew "pnpm"
-brew "terraform"
+brew "hashicorp/tap/terraform"
 
 # Casks
 cask "gpg-suite"
