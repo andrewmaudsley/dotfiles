@@ -378,7 +378,7 @@ install_dotfiles() {
 
 # Set up traps
 trap 'handle_error ${LINENO}' ERR
-trap 'handle_termination' INT TERM HUP QUIT EXIT
+trap 'handle_termination' INT TERM HUP QUIT
 
 # Get and validate installation directory
 set_step "Validating installation directory"
