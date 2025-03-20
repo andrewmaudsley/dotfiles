@@ -43,14 +43,52 @@ maintain_sudo() {
   done
 }
 
+# Function to handle script termination
+handle_termination() {
+  SCRIPT_FINISHED=true
+  cleanup_sudo
+  exit 0
+}
+
 # Function to cleanup sudo
 cleanup_sudo() {
   if [ -n "$SUDO_PID" ]; then
     set_step "Cleaning up administrator privileges"
-    SCRIPT_FINISHED=true  # Signal the maintain_sudo loop to stop
+    # Kill the sudo maintenance process first
+    kill $SUDO_PID 2>/dev/null
     wait $SUDO_PID 2>/dev/null || true
     SUDO_PID=""
   fi
+}
+
+# Function to ensure sudo access
+ensure_sudo() {
+  set_step "Requesting administrator privileges"
+  
+  # Check if we already have sudo access
+  if check_sudo_access; then
+    echo "Administrator privileges already available"
+    return 0
+  fi
+  
+  # Request sudo access with a helpful message
+  if ! sudo -p "Please enter your password to continue with the installation: " -v; then
+    echo "Error: Failed to obtain administrator privileges" >&2
+    echo "Please ensure you have sudo access and try again." >&2
+    exit $E_SUDO
+  fi
+  
+  # Verify sudo access was obtained
+  if ! check_sudo_access; then
+    echo "Error: Failed to verify administrator privileges" >&2
+    exit $E_SUDO
+  fi
+  
+  # Start background process to maintain sudo access
+  maintain_sudo &
+  SUDO_PID=$!
+  
+  echo "Administrator privileges obtained and verified successfully"
 }
 
 # Error handler
@@ -109,39 +147,6 @@ handle_error() {
 # Function to check if we have sudo access without a password
 check_sudo_access() {
   sudo -n true 2>/dev/null
-}
-
-# Function to ensure sudo access
-ensure_sudo() {
-  set_step "Requesting administrator privileges"
-  echo "This script requires administrator privileges to install and configure software."
-  echo "You may be prompted for your password."
-  
-  # Clear any existing sudo tokens for safety
-  sudo -k
-  
-  # Request sudo access with a helpful message
-  if ! sudo -p "Please enter your password to continue with the installation: " -v; then
-    echo "Error: Failed to obtain administrator privileges" >&2
-    echo "Please ensure you have sudo access and try again." >&2
-    exit $E_SUDO
-  fi
-  
-  # Verify initial sudo access
-  if ! check_sudo_access; then
-    echo "Error: Failed to verify administrator privileges" >&2
-    echo "Please ensure you have sudo access and try again." >&2
-    exit $E_SUDO
-  fi
-  
-  # Start background process to maintain sudo access
-  maintain_sudo &
-  SUDO_PID=$!
-  
-  # Set up cleanup trap for the sudo maintenance process
-  trap cleanup_sudo EXIT INT TERM HUP QUIT
-  
-  echo "Administrator privileges obtained and verified successfully"
 }
 
 # Function to validate directory
@@ -324,33 +329,33 @@ install_packages() {
 # Function to cleanup after installation
 cleanup() {
   set_step "Running cleanup tasks"
-  
-  echo "Running cleanup..."
   local cleanup_failed=0
   
-  # Clean up sudo first to prevent hanging
+  # Ensure we have sudo access before starting cleanup
+  if ! check_sudo_access; then
+    echo "Error: Lost administrator privileges during cleanup" >&2
+    exit $E_SUDO
+  fi
+  
+  echo "Running cleanup..."
+  
+  # Cache brew paths while we still have sudo
+  local brew_cache
+  brew_cache="$(brew --cache)"
+  
+  # Run Homebrew cleanup tasks first while we still have sudo
+  echo "Cleaning up Homebrew..."
+  brew cleanup || cleanup_failed=1
+  brew cleanup --prune=all || cleanup_failed=1
+  
+  # Now clean up sudo since we don't need it anymore
   cleanup_sudo
   
-  # Clean up Homebrew
-  echo "Cleaning up Homebrew..."
-  brew cleanup || {
-    echo "Warning: Homebrew cleanup failed"
-    cleanup_failed=1
-  }
-  
-  # Remove Homebrew cache
-  echo "Removing Homebrew cache..."
-  rm -rf "$(brew --cache)" || {
-    echo "Warning: Failed to remove Homebrew cache"
-    cleanup_failed=1
-  }
-  
-  # Clean up outdated versions
-  echo "Removing outdated versions..."
-  brew cleanup --prune=all || {
-    echo "Warning: Failed to remove outdated versions"
-    cleanup_failed=1
-  }
+  # Remove Homebrew cache without sudo (if it exists)
+  if [ -n "$brew_cache" ] && [ -d "$brew_cache" ]; then
+    echo "Removing Homebrew cache..."
+    rm -rf "$brew_cache" || cleanup_failed=1
+  fi
   
   if [ $cleanup_failed -eq 1 ]; then
     echo "Warning: Some cleanup steps failed, but continuing..."
@@ -389,8 +394,9 @@ install_dotfiles() {
   exit 0
 }
 
-# Set up error trap with line number
+# Set up traps
 trap 'handle_error ${LINENO}' ERR
+trap 'handle_termination' INT TERM HUP QUIT
 
 # Get and validate installation directory
 set_step "Validating installation directory"
