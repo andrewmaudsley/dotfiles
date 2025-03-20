@@ -25,21 +25,9 @@ set_step() {
 
 # Function to maintain sudo access
 maintain_sudo() {
-  while [ "$SCRIPT_FINISHED" = "false" ]; do
-    # Check sudo access without prompting
-    if ! check_sudo_access; then
-      if ! sudo -p "Please enter your password to continue: " -v; then
-        echo "Error: Failed to renew administrator privileges" >&2
-        return $E_SUDO
-      fi
-      
-      # Verify sudo access was renewed
-      if ! check_sudo_access; then
-        echo "Error: Failed to verify administrator privileges after renewal" >&2
-        return $E_SUDO
-      fi
-    fi
-    sleep 5  # Reduced sleep time to be more responsive to script completion
+  while true; do
+    sudo -v
+    sleep 60  # Refresh every 60 seconds
   done
 }
 
@@ -52,13 +40,10 @@ handle_termination() {
 
 # Function to cleanup sudo
 cleanup_sudo() {
-  if [ -n "$SUDO_PID" ]; then
-    set_step "Cleaning up administrator privileges"
-    # Kill the sudo maintenance process first
-    kill $SUDO_PID 2>/dev/null
-    wait $SUDO_PID 2>/dev/null || true
-    SUDO_PID=""
-  fi
+  set_step "Cleaning up administrator privileges"
+  # Kill the sudo maintenance process first
+  kill $SUDO_PID 2>/dev/null
+  SUDO_PID=""
 }
 
 # Function to ensure sudo access
@@ -396,7 +381,7 @@ install_dotfiles() {
 
 # Set up traps
 trap 'handle_error ${LINENO}' ERR
-trap 'handle_termination' INT TERM HUP QUIT
+trap 'handle_termination' INT TERM HUP QUIT EXIT
 
 # Get and validate installation directory
 set_step "Validating installation directory"
