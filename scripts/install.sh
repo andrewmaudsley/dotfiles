@@ -23,13 +23,32 @@ set_step() {
   echo "Step: $1"
 }
 
+# Function to maintain sudo access
+maintain_sudo() {
+  while [ "$SCRIPT_FINISHED" = "false" ]; do
+    # Check sudo access without prompting
+    if ! check_sudo_access; then
+      if ! sudo -p "Please enter your password to continue: " -v; then
+        echo "Error: Failed to renew administrator privileges" >&2
+        return $E_SUDO
+      fi
+      
+      # Verify sudo access was renewed
+      if ! check_sudo_access; then
+        echo "Error: Failed to verify administrator privileges after renewal" >&2
+        return $E_SUDO
+      fi
+    fi
+    sleep 5  # Reduced sleep time to be more responsive to script completion
+  done
+}
+
 # Function to cleanup sudo
 cleanup_sudo() {
-  # Only clean up if we haven't finished successfully
-  if [ "$SCRIPT_FINISHED" = "false" ] && [ -n "$SUDO_PID" ]; then
+  if [ -n "$SUDO_PID" ]; then
     set_step "Cleaning up administrator privileges"
-    kill $SUDO_PID 2>/dev/null
-    wait $SUDO_PID 2>/dev/null || true  # Ignore wait exit code
+    SCRIPT_FINISHED=true  # Signal the maintain_sudo loop to stop
+    wait $SUDO_PID 2>/dev/null || true
     SUDO_PID=""
   fi
 }
@@ -47,47 +66,49 @@ handle_error() {
   # Clean up sudo if needed
   cleanup_sudo
   
+  # Print error message with context
+  echo "Error occurred in step: $CURRENT_STEP" >&2
+  echo "Line $line_no: Exit code $exit_code" >&2
+  
   # Don't treat process termination as error
   if [ "$exit_code" -eq 143 ]; then  # SIGTERM
+    echo "Process terminated by user" >&2
     exit 0
   fi
   
-  echo "Error during step: ${CURRENT_STEP:-Unknown step}" >&2
-  echo "Failed on line $line_no with exit code $exit_code" >&2
-  
-  # Preserve explicit error codes from functions
+  # Map known error codes to messages
   if [ "$exit_code" -ge "$E_SUDO" ] && [ "$exit_code" -le "$E_DIRECTORY" ]; then
+    case $exit_code in
+      $E_SUDO)
+        echo "Failed to obtain or maintain administrator privileges" >&2
+        ;;
+      $E_XCODE)
+        echo "Failed to install Xcode Command Line Tools" >&2
+        ;;
+      $E_CLONE)
+        echo "Failed to clone dotfiles repository" >&2
+        ;;
+      $E_HOMEBREW)
+        echo "Failed to install or configure Homebrew" >&2
+        ;;
+      $E_PACKAGES)
+        echo "Failed to install packages from Brewfile" >&2
+        ;;
+      $E_DIRECTORY)
+        echo "Failed to validate or create directory" >&2
+        ;;
+    esac
     exit "$exit_code"
   fi
   
+  # Handle unexpected errors
+  echo "An unexpected error occurred" >&2
   exit $E_UNEXPECTED
 }
 
 # Function to check if we have sudo access without a password
 check_sudo_access() {
   sudo -n true 2>/dev/null
-}
-
-# Function to maintain sudo access
-maintain_sudo() {
-  while [ "$SCRIPT_FINISHED" = "false" ]; do
-    # Check sudo access without prompting
-    if ! check_sudo_access; then
-      echo "Renewing administrator privileges..." >&2
-      
-      if ! sudo -p "Please enter your password to continue: " -v; then
-        echo "Error: Failed to renew administrator privileges" >&2
-        return $E_SUDO
-      fi
-      
-      # Verify sudo access was renewed
-      if ! check_sudo_access; then
-        echo "Error: Failed to verify administrator privileges after renewal" >&2
-        return $E_SUDO
-      fi
-    fi
-    sleep 60
-  done
 }
 
 # Function to ensure sudo access
@@ -307,6 +328,9 @@ cleanup() {
   echo "Running cleanup..."
   local cleanup_failed=0
   
+  # Clean up sudo first to prevent hanging
+  cleanup_sudo
+  
   # Clean up Homebrew
   echo "Cleaning up Homebrew..."
   brew cleanup || {
@@ -332,15 +356,6 @@ cleanup() {
     echo "Warning: Some cleanup steps failed, but continuing..."
   else
     echo "Cleanup complete"
-  fi
-
-  # Mark script as finished to stop sudo maintenance
-  SCRIPT_FINISHED=true
-  
-  # Wait for sudo maintenance process to finish
-  if [ -n "$SUDO_PID" ]; then
-    wait "$SUDO_PID" 2>/dev/null || true
-    SUDO_PID=""
   fi
 }
 
