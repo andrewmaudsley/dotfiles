@@ -292,12 +292,6 @@ install_packages() {
   fi
 
   echo "Installing packages from Brewfile..."
-  # Install Homebrew Bundle
-  brew tap Homebrew/bundle || {
-    echo "Error: Failed to tap Homebrew/bundle"
-    exit $E_PACKAGES
-  }
-
   # Install packages from Brewfile
   brew bundle || {
     echo "Error: Failed to install packages from Brewfile"
