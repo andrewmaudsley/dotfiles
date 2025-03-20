@@ -70,7 +70,7 @@ check_sudo_access() {
 
 # Function to maintain sudo access
 maintain_sudo() {
-  while true; do
+  while [ "$SCRIPT_FINISHED" = "false" ]; do
     # Check sudo access without prompting
     if ! check_sudo_access; then
       echo "Renewing administrator privileges..." >&2
@@ -332,6 +332,15 @@ cleanup() {
     echo "Warning: Some cleanup steps failed, but continuing..."
   else
     echo "Cleanup complete"
+  fi
+
+  # Mark script as finished to stop sudo maintenance
+  SCRIPT_FINISHED=true
+  
+  # Wait for sudo maintenance process to finish
+  if [ -n "$SUDO_PID" ]; then
+    wait "$SUDO_PID" 2>/dev/null || true
+    SUDO_PID=""
   fi
 }
 
