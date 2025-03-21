@@ -29,7 +29,7 @@ Running the install script will:
 * Install Xcode Command Line Tools if not present
 * Clone this repo
 * Install the [Homebrew](https://brew.sh) package manager
-* Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle)
+* Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
 * Run cleanup   
 
 Modern versions of macOS come with [curl](https://github.com/curl/curl) installed by default. This can be used to download and execute the install script using the following command:
