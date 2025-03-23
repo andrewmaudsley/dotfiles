@@ -252,33 +252,49 @@ install_xcode_tools() {
   return 0
 }
 
-# Function to clone dotfiles repository
-clone_dotfiles() {
+# Function to clone dotfiles repository or pull latest changes
+clone_repo_and_pull() {
   local install_dir="$1"
   set_step "Cloning dotfiles repository to $install_dir"
   
   if [ -d "$install_dir" ]; then
     if [ -d "$install_dir/.git" ]; then
-      echo "dotfiles repo already exists at $install_dir"
+      echo "dotfiles repo already exists at $install_dir" >&3
+      echo "Updating repository with latest changes..." >&3
+      
+      # Change to the dotfiles directory
+      if ! cd "$install_dir"; then
+        echo "Error: Failed to change to dotfiles directory" >&2
+        return $E_DIRECTORY
+      fi
+      
+      # Pull the latest changes
+      if ! git pull origin main; then
+        echo "Error: Failed to pull latest changes" >&2
+        return $E_CLONE
+      fi
+      
+      echo "Repository updated successfully" >&3
     else
       echo "Error: Directory '$install_dir' exists but is not a git repository" >&2
       return $E_CLONE
     fi
   else
-    echo "Cloning dotfiles repo to $install_dir..."
+    echo "Cloning dotfiles repo to $install_dir..." >&3
     if ! git clone https://github.com/andrewmaudsley/dotfiles.git "$install_dir"; then
       echo "Error: Failed to clone dotfiles repo" >&2
       return $E_CLONE
     fi
-    echo "dotfiles repo cloned successfully"
+    echo "dotfiles repo cloned successfully" >&3
+    
+    # Change to the dotfiles directory
+    if ! cd "$install_dir"; then
+      echo "Error: Failed to change to dotfiles directory" >&2
+      return $E_DIRECTORY
+    fi
   fi
   
-  # Change to the dotfiles directory
-  if ! cd "$install_dir"; then
-    echo "Error: Failed to change to dotfiles directory" >&2
-    return $E_DIRECTORY
-  fi
-  echo "Changed to dotfiles directory: $install_dir"
+  echo "Changed to dotfiles directory: $install_dir" >&3
   
   return 0
 }
@@ -400,8 +416,8 @@ install_dotfiles() {
   # Install Xcode Command Line Tools if needed
   install_xcode_tools || return $?
   
-  # Clone dotfiles repository
-  clone_dotfiles "$install_dir" || return $?
+  # Clone dotfiles repository or pull latest changes
+  clone_repo_and_pull "$install_dir" || return $?
   
   # Install and configure Homebrew
   install_homebrew || return $?
