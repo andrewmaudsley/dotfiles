@@ -33,10 +33,10 @@ Running the install script will:
 * Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
 * Run cleanup   
 
-By default the repo will be cloned to the `HOME/.dotfiles` directory. This can be overridden by setting the `DOTFILES_REPO_DIR` environment variable, for example:
+By default the repo will be cloned to the `$HOME` directory. This can be overridden by setting the `DOTFILES_INSTALL_DIR` environment variable, for example:
 
 ```sh
-export DOTFILES_REPO_DIR="/path/to/dotfiles"
+export DOTFILES_INSTALL_DIR="~/path"
 ```
 
 Modern versions of macOS come with [curl](https://github.com/curl/curl) installed by default. This can be used to download and execute the install script using the following command:
