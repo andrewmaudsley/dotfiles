@@ -144,10 +144,35 @@ check_sudo_access() {
 validate_directory() {
   local dir="$1"
   
+  # Convert to absolute path if relative path provided
+  case "$dir" in
+    /*) ;; # Already absolute path
+    *) dir="$PWD/$dir" ;;
+  esac
+  
+  # Validate directory path
+  if [[ "$dir" =~ [[:space:]] ]]; then
+    echo "Error: Installation directory cannot contain spaces" >&2
+    return $E_DIRECTORY
+  fi
+  
   # Check if directory exists
   if [ -d "$dir" ]; then
     echo "Directory $dir exists"
     return 0
+  fi
+  
+  # Validate parent directory exists and is writable
+  local parent_dir
+  parent_dir=$(dirname "$dir")
+  if [ ! -d "$parent_dir" ]; then
+    echo "Error: Parent directory '$parent_dir' does not exist" >&2
+    return $E_DIRECTORY
+  fi
+  
+  if [ ! -w "$parent_dir" ]; then
+    echo "Error: Parent directory '$parent_dir' is not writable" >&2
+    return $E_DIRECTORY
   fi
   
   # Try to create directory
@@ -158,30 +183,35 @@ validate_directory() {
   fi
   
   echo "Directory $dir created successfully"
+  echo "$dir"
   return 0
 }
 
 # Function to get installation directory
 get_install_directory() {
-  local default_dir="$1"
+  local default_dir="$HOME/.dotfiles"
   local install_dir=""
   
-  # If an argument was provided, use that
-  if [ $# -gt 1 ]; then
-    install_dir="$2"
+  # Check for environment variable
+  if [ -n "${DOTFILES_REPO_DIR:-}" ]; then
+    echo "Using installation directory from DOTFILES_REPO_DIR environment variable"
+    install_dir="$DOTFILES_REPO_DIR"
+  # Use default
   else
+    echo "Using default installation directory"
     install_dir="$default_dir"
   fi
   
   # Validate the directory
-  validate_directory "$install_dir"
+  local validated_dir
+  validated_dir=$(validate_directory "$install_dir")
   if [ $? -ne 0 ]; then
     echo "Error: Failed to validate installation directory" >&2
     return $E_DIRECTORY
   fi
   
   # Return the validated directory
-  echo "$install_dir"
+  echo "$validated_dir"
   return 0
 }
 
@@ -387,9 +417,20 @@ install_dotfiles() {
 trap 'handle_error ${LINENO}' ERR
 trap 'handle_termination' INT TERM HUP QUIT
 
+# Display usage information if help flag is provided
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Usage: $0"
+  echo ""
+  echo "Environment Variables:"
+  echo "  DOTFILES_REPO_DIR    If set, overrides the default installation directory."
+  echo "                       Default: $HOME/.dotfiles"
+  echo ""
+  exit 0
+fi
+
 # Get and validate installation directory
 set_step "Validating installation directory"
-INSTALL_DIR=$(get_install_directory "$HOME/.dotfiles")
+INSTALL_DIR=$(get_install_directory)
 [ $? -eq 0 ] || exit $E_DIRECTORY
 
 # Run installation
