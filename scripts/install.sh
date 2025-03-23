@@ -255,15 +255,17 @@ install_xcode_tools() {
 # Function to clone dotfiles repository or pull latest changes
 clone_repo_and_pull() {
   local install_dir="$1"
-  set_step "Cloning dotfiles repository to $install_dir"
+  local repo_dir="$install_dir/dotfiles"
+  set_step "Cloning dotfiles repository to $repo_dir"
   
-  if [ -d "$install_dir" ]; then
-    if [ -d "$install_dir/.git" ]; then
-      echo "dotfiles repo already exists at $install_dir" >&3
+  # Check if the dotfiles directory already exists
+  if [ -d "$repo_dir" ]; then
+    if [ -d "$repo_dir/.git" ]; then
+      echo "dotfiles repo already exists at $repo_dir" >&3
       echo "Updating repository with latest changes..." >&3
       
       # Change to the dotfiles directory
-      if ! cd "$install_dir"; then
+      if ! cd "$repo_dir"; then
         echo "Error: Failed to change to dotfiles directory" >&2
         return $E_DIRECTORY
       fi
@@ -276,25 +278,25 @@ clone_repo_and_pull() {
       
       echo "Repository updated successfully" >&3
     else
-      echo "Error: Directory '$install_dir' exists but is not a git repository" >&2
+      echo "Error: Directory '$repo_dir' exists but is not a git repository" >&2
       return $E_CLONE
     fi
   else
-    echo "Cloning dotfiles repo to $install_dir..." >&3
-    if ! git clone https://github.com/andrewmaudsley/dotfiles.git "$install_dir"; then
+    echo "Cloning dotfiles repo to $repo_dir..." >&3
+    if ! git clone https://github.com/andrewmaudsley/dotfiles.git "$repo_dir"; then
       echo "Error: Failed to clone dotfiles repo" >&2
       return $E_CLONE
     fi
     echo "dotfiles repo cloned successfully" >&3
     
     # Change to the dotfiles directory
-    if ! cd "$install_dir"; then
+    if ! cd "$repo_dir"; then
       echo "Error: Failed to change to dotfiles directory" >&2
       return $E_DIRECTORY
     fi
   fi
   
-  echo "Changed to dotfiles directory: $install_dir" >&3
+  echo "Changed to dotfiles directory: $repo_dir" >&3
   
   return 0
 }
