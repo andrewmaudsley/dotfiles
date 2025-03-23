@@ -20,7 +20,7 @@ SCRIPT_FINISHED=false
 # Function to set the current step
 set_step() {
   CURRENT_STEP="$1"
-  echo "Step: $CURRENT_STEP"
+  echo "Step: $CURRENT_STEP" >&3
 }
 
 # Function to maintain sudo access
@@ -37,7 +37,7 @@ cleanup_sudo() {
   
   # If no sudo process is running, nothing to do
   if [ -z "$SUDO_PID" ]; then
-    echo "No administrator privileges process to clean up"
+    echo "No administrator privileges process to clean up" >&3
     return 0
   fi
   
@@ -47,7 +47,7 @@ cleanup_sudo() {
     return $E_SUDO
   fi
   SUDO_PID=""
-  echo "Administrator privileges cleaned up successfully"
+  echo "Administrator privileges cleaned up successfully" >&3
   return 0
 }
 
@@ -57,7 +57,7 @@ ensure_sudo() {
   
   # Check if we already have sudo access
   if check_sudo_access; then
-    echo "Administrator privileges already available"
+    echo "Administrator privileges already available" >&3
     return 0
   fi
   
@@ -78,7 +78,7 @@ ensure_sudo() {
   maintain_sudo &
   SUDO_PID=$!
   
-  echo "Administrator privileges obtained and verified successfully"
+  echo "Administrator privileges obtained and verified successfully" >&3
   return 0
 }
 
@@ -163,7 +163,8 @@ validate_directory() {
   
   # Check if directory exists
   if [ -d "$dir" ]; then
-    echo "Directory $dir exists"
+    echo "Directory $dir exists" >&3
+    echo "$dir"
     return 0
   fi
   
@@ -181,13 +182,13 @@ validate_directory() {
   fi
   
   # Try to create directory
-  echo "Creating directory $dir..."
+  echo "Creating directory $dir..." >&3
   if ! mkdir -p "$dir"; then
     echo "Error: Failed to create directory $dir" >&2
     return $E_DIRECTORY
   fi
   
-  echo "Directory $dir created successfully"
+  echo "Directory $dir created successfully" >&3
   echo "$dir"
   return 0
 }
@@ -199,11 +200,11 @@ get_install_directory() {
   
   # Check for environment variable
   if [ -n "${DOTFILES_REPO_DIR:-}" ]; then
-    echo "Using installation directory from DOTFILES_REPO_DIR environment variable"
+    echo "Using installation directory from DOTFILES_REPO_DIR environment variable" >&3
     install_dir="$DOTFILES_REPO_DIR"
   # Use default
   else
-    echo "Using default installation directory"
+    echo "Using default installation directory" >&3
     install_dir="$default_dir"
   fi
   
@@ -422,6 +423,9 @@ install_dotfiles() {
 trap 'handle_error ${LINENO}' ERR
 trap 'handle_termination' INT TERM HUP QUIT
 
+# Set up file descriptors
+exec 3>&1  # Open file descriptor 3 and point it to stdout
+
 # Display usage information if help flag is provided
 if [ $# -gt 0 ] && { [ "$1" = "-h" ] || [ "$1" = "--help" ]; }; then
   echo "Usage: $0"
@@ -441,3 +445,6 @@ INSTALL_DIR=$(get_install_directory)
 # Run installation
 install_dotfiles "$INSTALL_DIR"
 exit $?
+
+# Clean up file descriptors before exiting
+trap 'exec 3>&-' EXIT
