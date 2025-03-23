@@ -26,11 +26,18 @@ On first run, the install script will perform the initial installation and envir
 
 Running the install script will:
 
+* Prompt for administrator privileges
 * Install Xcode Command Line Tools if not present
 * Clone this repo
 * Install the [Homebrew](https://brew.sh) package manager
 * Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
 * Run cleanup   
+
+By default the repo will be cloned to the `HOME/.dotfiles` directory. This can be overridden by setting the `DOTFILES_REPO_DIR` environment variable, for example:
+
+```sh
+export DOTFILES_REPO_DIR="/path/to/dotfiles"
+```
 
 Modern versions of macOS come with [curl](https://github.com/curl/curl) installed by default. This can be used to download and execute the install script using the following command:
 
