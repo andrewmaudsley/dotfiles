@@ -144,6 +144,11 @@ check_sudo_access() {
 validate_directory() {
   local dir="$1"
   
+  # Expand tilde to home directory if present
+  if [[ "$dir" == "~"* ]]; then
+    dir="${dir/#\~/$HOME}"
+  fi
+  
   # Convert to absolute path if relative path provided
   case "$dir" in
     /*) ;; # Already absolute path
