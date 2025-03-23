@@ -27,7 +27,7 @@ On first run, the install script will perform the initial installation and envir
 Running the install script will:
 
 * Prompt for administrator privileges
-* Install Xcode Command Line Tools if not present
+* Install Xcode Command Line Tools if not present - installer will prompt for confirmation and license agreement
 * Clone this repo
 * Install the [Homebrew](https://brew.sh) package manager
 * Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
