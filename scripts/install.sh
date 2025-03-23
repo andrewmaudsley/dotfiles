@@ -195,7 +195,7 @@ validate_directory() {
 
 # Function to get installation directory
 get_install_directory() {
-  local default_dir="$HOME/.dotfiles"
+  local default_dir="$HOME/dotfiles"
   local install_dir=""
   
   # Check for environment variable
@@ -432,7 +432,7 @@ if [ $# -gt 0 ] && { [ "$1" = "-h" ] || [ "$1" = "--help" ]; }; then
   echo ""
   echo "Environment Variables:"
   echo "  DOTFILES_REPO_DIR    If set, overrides the default installation directory."
-  echo "                       Default: $HOME/.dotfiles"
+  echo "                       Default: $HOME/dotfiles"
   echo ""
   exit 0
 fi
