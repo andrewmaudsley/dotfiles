@@ -418,7 +418,7 @@ trap 'handle_error ${LINENO}' ERR
 trap 'handle_termination' INT TERM HUP QUIT
 
 # Display usage information if help flag is provided
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+if [ $# -gt 0 ] && { [ "$1" = "-h" ] || [ "$1" = "--help" ]; }; then
   echo "Usage: $0"
   echo ""
   echo "Environment Variables:"
