@@ -305,6 +305,16 @@ clone_repo_and_pull() {
 install_homebrew() {
   set_step "Installing and configuring Homebrew"
   
+  # Check if Homebrew is already installed but not in PATH
+  if ! command -v brew &> /dev/null; then
+    # Check if .zprofile exists and source it
+    if [ -f "$HOME/.zprofile" ]; then
+      echo "Sourcing .zprofile to check for Homebrew..." >&3
+      source "$HOME/.zprofile"
+    fi
+  fi
+  
+  # Now check again if brew is available
   if command -v brew &> /dev/null; then
     echo "Homebrew is already installed" >&3
     
@@ -331,13 +341,17 @@ install_homebrew() {
   local brew_path=""
   if [[ "$(uname -m)" == "arm64" ]]; then
     brew_path="/opt/homebrew/bin/brew"
+    echo "Adding Homebrew to PATH for Apple Silicon Mac in ~/.zprofile..." >&3
     (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> "$HOME/.zprofile"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
   else
     brew_path="/usr/local/bin/brew"
+    echo "Adding Homebrew to PATH for Intel Mac in ~/.zprofile..." >&3
     (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> "$HOME/.zprofile"
-    eval "$(/usr/local/bin/brew shellenv)"
   fi
+  
+  # Source the updated .zprofile to get Homebrew in the current session
+  echo "Sourcing updated .zprofile..." >&3
+  source "$HOME/.zprofile"
   
   # Verify Homebrew executable exists
   if [ ! -x "$brew_path" ]; then
@@ -485,4 +499,12 @@ INSTALL_DIR=$(get_install_directory)
 
 # Run installation
 install_dotfiles "$INSTALL_DIR"
-exit $?
+exit_code=$?
+
+# Print a helpful message about shell restart if installation was successful
+if [ $exit_code -eq 0 ]; then
+  echo "NOTE: If Homebrew commands aren't available, you may need to restart your terminal or run:"
+  echo "  source \"$HOME/.zprofile\""
+fi
+
+exit $exit_code
