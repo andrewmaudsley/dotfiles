@@ -365,6 +365,14 @@ install_packages() {
     return $E_PACKAGES
   fi
 
+  # Ensure sudo token is refreshed before running brew bundle
+  # This prevents additional password prompts during package installation
+  echo "Refreshing administrator privileges for package installation..."
+  if ! sudo -v; then
+    echo "Error: Failed to refresh administrator privileges" >&2
+    return $E_SUDO
+  fi
+
   echo "Installing packages from Brewfile..."
   if ! brew bundle; then
     echo "Error: Failed to install packages from Brewfile" >&2
@@ -389,9 +397,6 @@ cleanup() {
   brew cleanup || cleanup_failed=1
   brew cleanup --prune=all || cleanup_failed=1
   
-  # Now clean up sudo since we don't need it anymore
-  cleanup_sudo
-  
   # Remove Homebrew cache without sudo (if it exists)
   if [ -n "$brew_cache" ] && [ -d "$brew_cache" ]; then
     echo "Removing Homebrew cache..."
@@ -403,6 +408,9 @@ cleanup() {
   else
     echo "Cleanup complete"
   fi
+  
+  # Now clean up sudo as the very last step
+  cleanup_sudo
   
   return 0
 }
@@ -444,6 +452,9 @@ trap 'handle_termination' INT TERM HUP QUIT
 # Set up file descriptors
 exec 3>&1  # Open file descriptor 3 and point it to stdout
 
+# Clean up file descriptors before exiting
+trap 'exec 3>&-' EXIT
+
 # Display usage information if help flag is provided
 if [ $# -gt 0 ] && { [ "$1" = "-h" ] || [ "$1" = "--help" ]; }; then
   echo "Usage: $0"
@@ -463,6 +474,3 @@ INSTALL_DIR=$(get_install_directory)
 # Run installation
 install_dotfiles "$INSTALL_DIR"
 exit $?
-
-# Clean up file descriptors before exiting
-trap 'exec 3>&-' EXIT
