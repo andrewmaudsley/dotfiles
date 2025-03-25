@@ -45,4 +45,4 @@ Modern versions of macOS come with [curl](https://github.com/curl/curl) installe
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/andrewmaudsley/dotfiles/main/scripts/install.sh | bash
-``` 
+```
