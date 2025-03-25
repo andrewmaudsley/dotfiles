@@ -365,12 +365,15 @@ install_packages() {
     return $E_PACKAGES
   fi
 
-  # Ensure sudo token is refreshed before running brew bundle
-  # This prevents additional password prompts during package installation
+  # Silently refresh the sudo token without prompting for password
   echo "Refreshing administrator privileges for package installation..."
-  if ! sudo -v; then
-    echo "Error: Failed to refresh administrator privileges" >&2
-    return $E_SUDO
+  if ! sudo -n -v 2>/dev/null; then
+    echo "Warning: Administrator privileges expired, refreshing..." >&2
+    # Only prompt for password if silent refresh failed
+    if ! sudo -v; then
+      echo "Error: Failed to refresh administrator privileges" >&2
+      return $E_SUDO
+    fi
   fi
 
   echo "Installing packages from Brewfile..."
