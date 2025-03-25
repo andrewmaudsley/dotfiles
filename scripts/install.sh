@@ -306,48 +306,57 @@ install_homebrew() {
   set_step "Installing and configuring Homebrew"
   
   if command -v brew &> /dev/null; then
-    echo "Homebrew is already installed"
-  else
-    echo "Installing Homebrew..."
+    echo "Homebrew is already installed" >&3
     
-    # Download and run the install script
-    if ! NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"; then
-      echo "Error: Failed to install Homebrew" >&2
-      echo "Please check the error messages above and try again" >&2
-      return $E_HOMEBREW
+    # Update Homebrew
+    echo "Updating Homebrew..." >&3
+    if ! brew update; then
+      echo "Error: Failed to update Homebrew" >&2
+      echo "You may want to run 'brew update' manually later" >&2
     fi
     
-    # Add Homebrew to PATH based on architecture
-    local brew_path=""
-    if [[ "$(uname -m)" == "arm64" ]]; then
-      brew_path="/opt/homebrew/bin/brew"
-      (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> "$HOME/.zprofile"
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-      brew_path="/usr/local/bin/brew"
-      (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> "$HOME/.zprofile"
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
-    
-    # Verify Homebrew executable exists
-    if [ ! -x "$brew_path" ]; then
-      echo "Error: Homebrew executable not found at $brew_path" >&2
-      echo "Installation may have failed or PATH may not be set correctly" >&2
-      return $E_HOMEBREW
-    fi
-    
-    # Verify Homebrew is working
-    if ! brew --version &>/dev/null; then
-      echo "Error: Homebrew installation verified but 'brew' command not working" >&2
-      echo "Please try opening a new terminal and running 'brew --version'" >&2
-      return $E_HOMEBREW
-    fi
-    
-    echo "Homebrew installed successfully"
+    return 0
   fi
   
+  echo "Installing Homebrew..." >&3
+  
+  # Download and run the install script
+  if ! NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"; then
+    echo "Error: Failed to install Homebrew" >&2
+    echo "Please check the error messages above and try again" >&2
+    return $E_HOMEBREW
+  fi
+  
+  # Add Homebrew to PATH based on architecture
+  local brew_path=""
+  if [[ "$(uname -m)" == "arm64" ]]; then
+    brew_path="/opt/homebrew/bin/brew"
+    (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> "$HOME/.zprofile"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  else
+    brew_path="/usr/local/bin/brew"
+    (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> "$HOME/.zprofile"
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+  
+  # Verify Homebrew executable exists
+  if [ ! -x "$brew_path" ]; then
+    echo "Error: Homebrew executable not found at $brew_path" >&2
+    echo "Installation may have failed or PATH may not be set correctly" >&2
+    return $E_HOMEBREW
+  fi
+  
+  # Verify Homebrew is working
+  if ! brew --version &>/dev/null; then
+    echo "Error: Homebrew installation verified but 'brew' command not working" >&2
+    echo "Please try opening a new terminal and running 'brew --version'" >&2
+    return $E_HOMEBREW
+  fi
+  
+  echo "Homebrew installed successfully" >&3
+  
   # Update Homebrew
-  echo "Updating Homebrew..."
+  echo "Updating Homebrew..." >&3
   if ! brew update; then
     echo "Error: Failed to update Homebrew" >&2
     echo "You may want to run 'brew update' manually later" >&2
