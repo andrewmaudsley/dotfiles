@@ -30,7 +30,7 @@ Running the install script will:
 * Install Xcode Command Line Tools if not present - installer will prompt for confirmation and license agreement
 * Clone this repo
 * Install the [Homebrew](https://brew.sh) package manager
-* Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile)
+* Install packages and applications ([casks](https://github.com/Homebrew/homebrew-cask)) listed in the [Brewfile](./Brewfile) using [brew bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile) - prompts for administrator privileges
 * Run cleanup   
 
 By default the repo will be cloned into a directory named `dotfiles` in your home directory (`$HOME/dotfiles`). You can change the parent directory by setting the `DOTFILES_INSTALL_DIR` environment variable prior to running the install script, for example:
