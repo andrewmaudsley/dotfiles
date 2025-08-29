@@ -7,28 +7,51 @@ install_xcode_command_line_tools() {
     return 0
   fi
 
+  # Perform an unattended install using softwareupdate
   echo "Starting installation of Xcode Command Line Tools..."
-  # Trigger the Xcode install prompt dialog
-  if ! xcode-select --install >/dev/null 2>&1; then
-    echo "Waiting for Xcode Command Line Tools installation to complete..."
+
+  # Create install-on-demand placeholder file
+  local placeholder="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+  sudo /usr/bin/touch "$placeholder" || true
+
+  cleanup_placeholder() {
+    sudo rm -f "$placeholder" || true
+  }
+
+  error_and_cleanup() {
+    cleanup_placeholder
+    echo "Error: $1" >&2
+    exit 1
+  } 
+
+  # Find the correct label for Command Line Tools (this could change in future)
+  local label
+  label=$(softwareupdate -l 2>&1 \
+    | awk -F": " '/Label: / && /Command Line (Developer|Tools)/ {print $2; exit}') || true
+
+  if [[ -z "${label:-}" ]]; then
+    error_and_cleanup "Could not find Command Line Tools in software update catalog."
   fi
 
-  # Wait for installation to complete
-  local timeout_minutes=30
-  local timeout=$((timeout_minutes * 60))
-  local interval=20
-  local elapsed=0
-  while ! xcode-select -p >/dev/null 2>&1; do
-    if (( elapsed >= timeout )); then
-      echo "Error: Xcode Command Line Tools installation timed out after ${timeout_minutes} minutes." >&2
-      echo "To install manually run: xcode-select --install" >&2
-      return 1
-    fi
-    sleep "$interval"
-    elapsed=$((elapsed + interval))
-  done
+  echo "Installing: $label"
 
-  echo "Xcode Command Line Tools installation completed."
+  if ! sudo softwareupdate -i "$label" --verbose; then
+    error_and_cleanup "Could not install '$label' via softwareupdate."
+  fi
+
+  # Ensure xcode-select points to the install path
+  if [[ -d "/Library/Developer/CommandLineTools" ]]; then
+    sudo xcode-select --switch /Library/Developer/CommandLineTools >/dev/null 2>&1 || true
+  fi
+
+  # Verify installation
+  if xcode-select -p >/dev/null 2>&1; then
+    cleanup_placeholder
+    echo "Xcode Command Line Tools installation completed."
+    return 0
+  else
+    error_and_cleanup "Xcode Command Line Tools not installed successfully."
+  fi
 }
 
 platform="$(uname -s)"
