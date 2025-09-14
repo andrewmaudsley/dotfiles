@@ -1,0 +1,9 @@
+[general]
+# Ignore B6 body-min-length
+ignore=B6
+
+[title-max-length]
+line-length=50
+
+[body-max-line-length]
+line-length=72
